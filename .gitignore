@@ -1,0 +1,20 @@
+# Backend
+backend/venv/
+backend/.env
+backend/__pycache__/
+backend/uploads/
+backend/node_modules/
+backend/*.pyc
+
+# Frontend
+frontend/.env.local
+frontend/.env
+frontend/.next/
+frontend/node_modules/
+frontend/.vercel/
+frontend/tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
+*.log
+*.bak
