@@ -5,9 +5,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+_raw_url = os.getenv("DATABASE_URL", "")
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+# Neon / Railway gibi platformlar postgresql:// veya postgres:// verir.
+# SQLAlchemy async engine postgresql+asyncpg:// ister — otomatik dönüştür.
+if _raw_url.startswith("postgres://"):
+    _raw_url = _raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif _raw_url.startswith("postgresql://"):
+    _raw_url = _raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+DATABASE_URL = _raw_url
+
+# Neon TLS gerektiriyor: asyncpg için connect_args kullan
+_connect_args = {}
+if "neon.tech" in DATABASE_URL or "sslmode=require" in DATABASE_URL:
+    # sslmode query param asyncpg ile çalışmaz, connect_args'a taşı
+    DATABASE_URL = DATABASE_URL.replace("?sslmode=require", "").replace("&sslmode=require", "")
+    _connect_args = {"ssl": "require"}
+
+engine = create_async_engine(DATABASE_URL, echo=False, connect_args=_connect_args)
 
 AsyncSessionLocal = sessionmaker(
     bind=engine,
