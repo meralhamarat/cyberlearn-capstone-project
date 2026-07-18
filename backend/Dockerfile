@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 # Python bağımlılıkları
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Uygulama kodu
 COPY . .
@@ -21,5 +21,5 @@ RUN mkdir -p uploads/documents
 # Port
 EXPOSE 8000
 
-# Başlatma komutu
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Başlatma komutu — önce migration, sonra sunucu
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}

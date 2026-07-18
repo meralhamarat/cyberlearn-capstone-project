@@ -22,6 +22,14 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# Override DB URL from environment variable (for Railway/production)
+# Convert asyncpg URL to sync psycopg2 URL for Alembic
+_db_url = os.environ.get("DATABASE_URL", "")
+if _db_url:
+    # Railway may provide postgres:// or postgresql+asyncpg:// — normalize to sync
+    _db_url = _db_url.replace("postgresql+asyncpg://", "postgresql://").replace("postgres://", "postgresql://")
+    config.set_main_option("sqlalchemy.url", _db_url)
+
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
